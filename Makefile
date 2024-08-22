@@ -1,6 +1,9 @@
 project = explorerTL
 
-TARGET ?= "Point2Point"
+#TARGET ?= "Point2Point"
+TARGET ?= "example7"
+
+TARGET2 = example7
 
 # Toolchains and tools
 MILL = ./mill
@@ -13,7 +16,7 @@ rtl:## Generates Verilog code from Chisel sources (output to ./generated_sv_dir)
 check: test
 .PHONY: test
 test:## Run Chisel tests
-	$(MILL) $(project).test.testOnly $(project).GCDSpec
+	$(MILL) $(project).test.testOnly $(project).$(TARGET2).explorerTLSpec
 	@echo "If using WriteVcdAnnotation in your tests, the VCD files are generated in ./test_run_dir/testname directories."
 
 .PHONY: lint
