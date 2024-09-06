@@ -2,6 +2,7 @@ package explorerTL.asyncDevice
 
 import chisel3._
 import freechips.rocketchip.diplomacy._
+import freechips.rocketchip.prci.ClockBundle
 import freechips.rocketchip.regmapper._
 import freechips.rocketchip.subsystem.CrossingWrapper
 import freechips.rocketchip.tilelink._
@@ -53,9 +54,8 @@ class DUT(implicit p: Parameters) extends LazyModule {
 
 class DUTImp(outer: DUT) extends LazyModuleImp(outer) {
   val io = IO(new Bundle {
-    val slowClk = Input(Clock())
+    val deviceDomain = Input(new ClockBundle())
   })
-  val deviceClk = Wire(Clock()).suggestName("deviceClk"); dontTouch(deviceClk)
-  deviceClk                 := io.slowClk
-  outer.island.module.clock := deviceClk
+  outer.island.module.clock := io.deviceDomain.clock
+  outer.island.module.reset := io.deviceDomain.reset
 }
