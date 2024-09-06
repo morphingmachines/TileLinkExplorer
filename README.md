@@ -16,7 +16,7 @@ $ git clone https://github.com/morphingmachines/TileLinkExplorer.git
 ```
 ### Generating RTL
 ```bash
-$ make rtl
+$ make rtl TARGET=Point2Point # other allowed targets {RegNode}
 ```
 The output verilog files are generated in the ./generated_sv_dir directory. This also generates a graphml file that visualizes the diplomacy graph of different components in the system. To view graphml file, use yEd.
 
