@@ -91,7 +91,8 @@ object explorerTLMain extends App with LazyToplevel {
   val str = if (args.length == 0) "" else args(0)
   val lazyTop = str match {
     case "Point2Point" => LazyModule(new point2point.Point2Point()(Parameters.empty))
-    case "RegNode" => LazyModule(new regNode.DUT()(Parameters.empty))
+    case "RegNode"     => LazyModule(new regNode.DUT()(Parameters.empty))
+    case "AsyncDevice" => LazyModule(new asyncDevice.DUT()(Parameters.empty))
     // case _ => LazyModule(new l2.L2Top()(Parameters.empty))
     case _ => throw new Exception("Unknown Module Name!")
   }

@@ -2,9 +2,9 @@ package explorerTL.regNode
 
 import chisel3._
 import freechips.rocketchip.diplomacy._
+import freechips.rocketchip.regmapper.RegField
 import freechips.rocketchip.tilelink._
 import org.chipsalliance.cde.config._
-import freechips.rocketchip.regmapper.RegField
 
 class ExampleDevice(val base: BigInt, val beatBytes: Int)(implicit p: Parameters) extends LazyModule {
 
