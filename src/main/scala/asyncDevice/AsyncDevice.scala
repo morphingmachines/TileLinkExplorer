@@ -54,7 +54,7 @@ class DUT(implicit p: Parameters) extends LazyModule {
 
 class DUTImp(outer: DUT) extends LazyModuleImp(outer) {
   val io = IO(new Bundle {
-    val deviceDomain = Input(new ClockBundle())
+    val deviceDomain = Input(new ClockBundle)
   })
   outer.island.module.clock := io.deviceDomain.clock
   outer.island.module.reset := io.deviceDomain.reset
