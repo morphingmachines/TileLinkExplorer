@@ -1,11 +1,14 @@
 package explorerTL.asyncDevice
 
 import chisel3._
-import freechips.rocketchip.diplomacy._
+import freechips.rocketchip.diplomacy.{AddressSet, IdRange}
+import freechips.rocketchip.prci.AsynchronousCrossing
 import freechips.rocketchip.regmapper._
+import freechips.rocketchip.resources.SimpleDevice
 import freechips.rocketchip.subsystem.CrossingWrapper
 import freechips.rocketchip.tilelink._
 import org.chipsalliance.cde.config._
+import org.chipsalliance.diplomacy.lazymodule._
 
 class ExampleTLDevice(val base: BigInt)(implicit p: Parameters) extends LazyModule {
   val device = new SimpleDevice("Simple Device", Seq("Example TL Device"))
