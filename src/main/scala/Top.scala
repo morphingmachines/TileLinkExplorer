@@ -17,6 +17,7 @@ object explorerTLMain extends App with emitrtl.LazyToplevel {
     case "Point2Point" => LazyModule(new point2point.Point2Point()(Parameters.empty))
     case "RegNode"     => LazyModule(new regNode.DUT()(Parameters.empty))
     case "AsyncDevice" => LazyModule(new asyncDevice.DUT()(Parameters.empty))
+    case "AdapterNode" => LazyModule(new adapterNode.DUT()(Parameters.empty))
     case _             => throw new Exception("Unknown Module Name!")
   }
 
