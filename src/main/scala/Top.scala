@@ -2,6 +2,8 @@
 
 package explorerTL
 
+import emitrtl.Toplevel
+import explorerTL.switchboard.SwitchboardTest
 import org.chipsalliance.cde.config.Parameters
 import org.chipsalliance.diplomacy.lazymodule.LazyModule
 
@@ -11,7 +13,7 @@ import org.chipsalliance.diplomacy.lazymodule.LazyModule
   * }}}
   */
 
-object explorerTLMain extends App with emitrtl.LazyToplevel {
+object lazyExplorerTLMain extends App with emitrtl.LazyToplevel {
   val str = if (args.length == 0) "" else args(0)
   val lazyTop = str match {
     case "Point2Point" => LazyModule(new point2point.Point2Point()(Parameters.empty))
@@ -25,5 +27,14 @@ object explorerTLMain extends App with emitrtl.LazyToplevel {
   chisel2firrtl()
   firrtl2sv()
   genDiplomacyGraph()
+}
 
+object explorerTLMain extends App with Toplevel {
+  val str = if (args.length == 0) "" else args(0)
+  lazy val topModule = str match {
+    case "TestTop" => new SwitchboardTest
+    case _         => throw new Exception("Unknown Module Name!")
+  }
+  chisel2firrtl()
+  firrtl2sv()
 }
