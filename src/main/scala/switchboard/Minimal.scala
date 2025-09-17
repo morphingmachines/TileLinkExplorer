@@ -21,11 +21,14 @@ class SwitchboardTest extends Module {
     val in  = Flipped(new SBIO)
   })
 
-  val x = VecInit.tabulate(32)(i => io.in.bits.data(8 * (i + 1) - 1, 8 * i) + 1.U)
+  val buf = Module(new Queue(new SwitchboardIfc, 32))
 
-  io.out.valid     := io.in.valid
-  io.in.ready      := io.out.ready
-  io.out.bits.data := x.asUInt
-  io.out.bits.dest := io.in.bits.dest
-  io.out.bits.last := io.in.bits.last
+  val x = VecInit(io.in.bits.data.asTypeOf(Vec(32, UInt(8.W))).map(i => i + 1.U))
+  buf.io.enq.valid     := io.in.valid
+  buf.io.enq.bits.data := x.asUInt
+  buf.io.enq.bits.dest := io.in.bits.dest
+  buf.io.enq.bits.last := io.in.bits.last
+  io.in.ready          := buf.io.enq.ready
+  io.out <> buf.io.deq
+
 }

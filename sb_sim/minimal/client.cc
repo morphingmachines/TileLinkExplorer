@@ -2,59 +2,71 @@
 // This code is licensed under Apache License 2.0 (see LICENSE for details)
 
 #include "switchboard.hpp"
-
+#include <iostream>
+#include <thread>
 #define NBYTES 32
 
-int main() {
-    SBTX tx;
-    SBRX rx;
+void send_thread(SBTX *tx) {
+  sb_packet txp;
 
-    // initialize connections
-    fprintf(stderr,"client TX initializing\n");
-    tx.init("in_port.q");
-    fprintf(stderr,"client RX initializing\n");
-    rx.init("out_port.q");
-
-    // form packet
-
-    sb_packet txp;
-
+  for (int j = 0; j < 32; j++) {
     for (int i = 0; i < NBYTES; i++) {
-        txp.data[i] = i & 0xff;
+      txp.data[i] = i & 0xff;
     }
 
     txp.destination = 0xbeefcafe;
     txp.last = true;
 
     // send packet
-    spsc_queue* hdl = (spsc_queue*) (tx.get_shm_handle());
-    fprintf(stderr,"head: %d Tail:%d\n",hdl->cached_head, hdl->cached_tail);
-    tx.send_blocking(txp);
-    fprintf(stderr,"TX packet: %s\n", sb_packet_to_str(txp, NBYTES).c_str());
-    fprintf(stderr,"head: %d Tail:%d\n",hdl->cached_head, hdl->cached_tail);
+    tx->send_blocking(txp);
+    fprintf(stderr, "TX packet: %s\n", sb_packet_to_str(txp, NBYTES).c_str());
+  }
+}
 
-    // receive packet
-
-    sb_packet rxp;
-    while(rx.recv(rxp) == false);
+void recv_thread(SBRX *rx) {
+  sb_packet rxp;
+  for (int j = 0; j < 32; j++) {
+    while (rx->recv(rxp) == false)
+      ;
     printf("RX packet: %s\n", sb_packet_to_str(rxp, NBYTES).c_str());
-    printf("head: %d Tail:%d\n",hdl->cached_head, hdl->cached_tail);
-
-
     for (int i = 0; i < NBYTES; i++) {
-        assert(rxp.data[i] == (txp.data[i] + 1));
+      assert(rxp.data[i] == ((i & 0xff) + 1));
     }
+  }
+}
 
-    // send a packet that will end the test
+int main() {
+  SBTX tx;
+  SBRX rx;
 
-    for (int i = 0; i < NBYTES; i++) {
-        txp.data[i] = 0xff;
-    }
-    tx.send_blocking(txp);
+  // initialize connections
+  fprintf(stderr, "client TX initializing\n");
+  tx.init("in_port.q");
+  fprintf(stderr, "client RX initializing\n");
+  rx.init("out_port.q");
 
-    // declare test as having passed for regression testing purposes
+  // form packet
 
-    printf("PASS!\n");
+  sb_packet txp;
+  std::thread t(send_thread, &tx);
 
-    return 0;
+  // receive packet
+
+  sb_packet rxp;
+  std::thread r(recv_thread, &rx);
+
+  t.join();
+  r.join();
+  // send a packet that will end the test
+
+  for (int i = 0; i < NBYTES; i++) {
+    txp.data[i] = 0xff;
+  }
+  tx.send_blocking(txp);
+
+  // declare test as having passed for regression testing purposes
+
+  printf("PASS!\n");
+
+  return 0;
 }
