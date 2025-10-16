@@ -6,11 +6,11 @@ SBDIR := $(shell switchboard --path)
 
 .PHONY: verilator
 verilator: client
-	./test.py --tool verilator
+	./build.py --tool verilator
 
 .PHONY: icarus
 icarus: client
-	./test.py --tool icarus
+	./build.py --tool icarus
 
 client: client.cc $(SBDIR)/cpp/switchboard.hpp
 	g++ -std=c++11 -I$(SBDIR)/cpp $< -o $@

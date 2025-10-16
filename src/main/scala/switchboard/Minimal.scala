@@ -15,7 +15,7 @@ class SwitchboardIfc extends Bundle {
 
 class SBIO extends IrrevocableIO[SwitchboardIfc](new SwitchboardIfc)
 
-class SwitchboardTest extends Module {
+class Minimal extends Module {
   val io = IO(new Bundle {
     val out = new SBIO
     val in  = Flipped(new SBIO)

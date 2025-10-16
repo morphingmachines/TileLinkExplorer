@@ -4,7 +4,7 @@ package explorerTL
 
 import emitrtl.Toplevel
 import explorerTL.serdes.{SerdesPhyImp, TLSerialLoopBack}
-import explorerTL.switchboard.SwitchboardTest
+import explorerTL.switchboard.Minimal
 import org.chipsalliance.cde.config.Parameters
 import org.chipsalliance.diplomacy.lazymodule.LazyModule
 import testchipip.serdes.InternalSyncSerialPhyParams
@@ -24,6 +24,8 @@ object lazyExplorerTLMain extends App with emitrtl.LazyToplevel {
     case "AdapterNode"      => LazyModule(new adapterNode.DUT()(Parameters.empty))
     case "TLSerDesLoopBack" => LazyModule(new TLSerialLoopBack()(Parameters.empty))
     case "AXI4"             => LazyModule(new axi4.Point2Point()(Parameters.empty))
+    case "TLSBWrap"         => LazyModule(new tilelinkSwitchboard.SwitchboardTLWrapper(1, 1)(Parameters.empty))
+    case "TLSBMem"          => LazyModule(new tilelinkSwitchboard.SwitchboardTLWrapper(0, 1)(Parameters.empty))
     case _                  => throw new Exception("Unknown Module Name!")
   }
 
@@ -36,7 +38,7 @@ object lazyExplorerTLMain extends App with emitrtl.LazyToplevel {
 object explorerTLMain extends App with Toplevel {
   val str = if (args.length == 0) "" else args(0)
   lazy val topModule = str match {
-    case "TestTop" => new SwitchboardTest
+    case "Minimal" => new Minimal
     case "SerPhy"  => new SerdesPhyImp(InternalSyncSerialPhyParams())
     case _         => throw new Exception("Unknown Module Name!")
   }

@@ -39,7 +39,7 @@ def main():
         interfaces=interfaces,
         resets=resets,
     )
-    for src_file in chisel_generated_sources("explorerTL.switchboard.SwitchboardTest"):
+    for src_file in chisel_generated_sources("explorerTL.switchboard.Minimal"):
         dut.input(src_file)
 
     dut.input(PROJ_DIR / "src" / "main" / "resources" / "vsrc" / "SimSwitchboardTop.sv")

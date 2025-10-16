@@ -15,7 +15,7 @@ module SimSwitchboardTop(
 );
 
 
-  SwitchboardTest dutWrap (
+  Minimal dutWrap (
     .clock(clk),
     .reset(rst),
     // Connect input SB port signals
