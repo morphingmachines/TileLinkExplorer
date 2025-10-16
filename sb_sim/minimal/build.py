@@ -24,26 +24,27 @@ def chisel_generated_sources(topModule_name):
 
 
 def main():
-    resets = [dict(name="rst", delay=0)]
+    reset = [dict(name="reset", delay=0)]
+    clock  = [dict(name="clock")]
 
     interfaces = {
-        "in_port": dict(type="sb", dw=256, uri = "in_port.q", direction="input"),
-        "out_port": dict(type="sb", dw=256, uri = "out_port.q", direction="output"),
+        "io_in": dict(type="sb", dw=256, uri = "in_port.q", direction="input"),
+        "io_out": dict(type="sb", dw=256, uri = "out_port.q", direction="output"),
     }
 
+    topModule_name = "explorerTL.switchboard.Minimal"
     # build the simulator
     dut = SbDut(
-        "SimSwitchboardTop",
+        topModule_name.split(".")[-1],
         autowrap=True,
         cmdline=True,
         interfaces=interfaces,
-        resets=resets,
+        resets=reset,
+        clocks=clock,
     )
-    for src_file in chisel_generated_sources("explorerTL.switchboard.Minimal"):
+    for src_file in chisel_generated_sources(topModule_name):
         dut.input(src_file)
 
-    dut.input(PROJ_DIR / "src" / "main" / "resources" / "vsrc" / "SimSwitchboardTop.sv")
-    
     dut.add(
         "tool",
         "verilator",
