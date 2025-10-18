@@ -208,48 +208,63 @@ class SBIO extends Bundle {
   }
 }
 
+case class TLManagerPortParams(
+  base:         BigInt,
+  size:         BigInt,
+  beatBytes:    Int,
+  maxXferBytes: Int = 256,
+  executable:   Boolean = true,
+)
+
+case class TLClientPortParams(
+  idBits: Int,
+)
+
 trait SwitchboardTLAdapter { this: LazyModule =>
-  val nManager: Int
-  val nClient:  Int
+  val nManagerParams: Seq[TLManagerPortParams]
+  val nClientParams:  Seq[TLClientPortParams]
 
   implicit val p: Parameters
-  lazy val managers = Seq.fill(nManager)(
+  lazy val managers = nManagerParams.map { i =>
+    require(i.maxXferBytes <= SBConst.TLMaxTransferSz)
+    require(i.beatBytes <= SBConst.TLBeatBytes)
     TLManagerNode(
       Seq(
         TLSlavePortParameters.v1(
           Seq(
             TLSlaveParameters.v1(
-              address = Seq(AddressSet(0, BigInt(0x7fff_ffff_ffff_ffffL))),
+              address = AddressSet.misaligned(i.base, i.size),
               regionType = RegionType.UNCACHED,
-              executable = true,
-              supportsPutFull = TransferSizes(1, SBConst.TLMaxTransferSz),
-              supportsPutPartial = TransferSizes(1, SBConst.TLMaxTransferSz),
-              supportsGet = TransferSizes(1, SBConst.TLMaxTransferSz),
+              executable = i.executable,
+              supportsPutFull = TransferSizes(1, i.maxXferBytes),
+              supportsPutPartial = TransferSizes(1, i.maxXferBytes),
+              supportsGet = TransferSizes(1, i.maxXferBytes),
               mayDenyGet = false,
               mayDenyPut = false,
             ),
           ),
-          beatBytes = SBConst.TLBeatBytes,
+          beatBytes = i.beatBytes,
         ),
       ),
-    ),
-  )
+    )
+  }
 
-  lazy val clients = Seq.fill(nClient)(
+  lazy val clients = nClientParams.map { i =>
+    require(i.idBits <= SBConst.SBTLBundleParameters.sourceBits)
     TLClientNode(
       Seq(
         TLMasterPortParameters.v1(
-          Seq(TLMasterParameters.v1(name = "SwitchboardWrapperMasterPort", sourceId = IdRange(0, 0x7f))),
+          Seq(TLMasterParameters.v1(name = "SwitchboardWrapperMasterPort", sourceId = IdRange(0, 1 << i.idBits))),
         ),
       ),
-    ),
-  )
+    )
+  }
 
   lazy val module = new LazyModuleImp(this) {
 
     val io = IO(new Bundle {
       val manager = Vec(
-        nManager,
+        nManagerParams.length,
         new Bundle {
           val d = Flipped(new SBIO)
           val a = new SBIO
@@ -257,7 +272,7 @@ trait SwitchboardTLAdapter { this: LazyModule =>
       )
 
       val client = Vec(
-        nClient,
+        nClientParams.length,
         new Bundle {
           val d = new SBIO
           val a = Flipped(new SBIO)
@@ -265,7 +280,7 @@ trait SwitchboardTLAdapter { this: LazyModule =>
       )
     })
 
-    (0 until nClient).foreach { i =>
+    (0 until nClientParams.length).foreach { i =>
       val (client_port, _) = clients(i).out(0)
       val clientABuf       = Module(new Queue(client_port.a.bits.cloneType, 8))
       val clientDBuf       = Module(new Queue(client_port.d.bits.cloneType, 8))
@@ -282,7 +297,7 @@ trait SwitchboardTLAdapter { this: LazyModule =>
       clientDBuf.io.enq <> client_port.d
     }
 
-    (0 until nManager).foreach { i =>
+    (0 until nManagerParams.length).foreach { i =>
       val (manager_port, _) = managers(i).in(0)
       require(manager_port.a.bits.address.getWidth <= SBConst.SBTLBundleParameters.addressBits)
       require(manager_port.a.bits.data.getWidth <= SBConst.SBTLBundleParameters.dataBits)

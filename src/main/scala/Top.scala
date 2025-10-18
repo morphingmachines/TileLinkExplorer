@@ -24,7 +24,7 @@ object lazyExplorerTLMain extends App with emitrtl.LazyToplevel {
     case "AdapterNode"      => LazyModule(new adapterNode.DUT()(Parameters.empty))
     case "TLSerDesLoopBack" => LazyModule(new TLSerialLoopBack()(Parameters.empty))
     case "AXI4"             => LazyModule(new axi4.Point2Point()(Parameters.empty))
-    case "TLSBWrap"         => LazyModule(new tilelinkSwitchboard.TLLoopback()(Parameters.empty))
+    case "SBTLLoopback"     => LazyModule(new tilelinkSwitchboard.TLLoopback()(Parameters.empty))
     case "SBTLMem"          => LazyModule(new tilelinkSwitchboard.TLMem()(Parameters.empty))
     case _                  => throw new Exception("Unknown Module Name!")
   }
