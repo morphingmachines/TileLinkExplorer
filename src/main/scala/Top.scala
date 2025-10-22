@@ -20,6 +20,7 @@ object lazyExplorerTLMain extends App with emitrtl.LazyToplevel {
   val lazyTop = str match {
     case "Point2Point"      => LazyModule(new point2point.Point2Point()(Parameters.empty))
     case "RegNode"          => LazyModule(new regNode.DUT()(Parameters.empty))
+    case "SmoketestRegNode" => LazyModule(new regNode.SmoketestRegNode()(Parameters.empty))
     case "AsyncDevice"      => LazyModule(new asyncDevice.DUT()(Parameters.empty))
     case "AdapterNode"      => LazyModule(new adapterNode.DUT()(Parameters.empty))
     case "TLSerDesLoopBack" => LazyModule(new TLSerialLoopBack()(Parameters.empty))

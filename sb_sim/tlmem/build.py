@@ -5,6 +5,8 @@
 
 import time
 from pathlib import Path
+import argparse
+import sys
 
 from switchboard import SbDut, delete_queues, binary_run
 
@@ -22,17 +24,23 @@ def chisel_generated_sources(topModule_name):
 
     return list(map(lambda x: dir + "/" + x.strip("\n"), lines))
 
+def make_interfaces(n_clients=1, n_managers=0):
+    interfaces = {}
+    for i in range(n_clients):
+        interfaces[f"io_client_{i}_a"] = dict(type="sb", dw=416, uri = f"client_{i}_a.q", direction="input")
+        interfaces[f"io_client_{i}_d"] = dict(type="sb", dw=416, uri = f"client_{i}_d.q", direction="output")
+    for i in range(n_managers):
+        interfaces[f"io_manager_{i}_a"] = dict(type="sb", dw=416, uri = f"manager_{i}_a.q", direction="output")
+        interfaces[f"io_manager_{i}_d"] = dict(type="sb", dw=416, uri = f"manager_{i}_d.q", direction="input")
+    return interfaces
 
-def main():
+
+def main(topModule_name="explorerTL.tilelinkSwitchboard.TLLoopback", n_clients=1, n_managers= 1):
     reset = [dict(name="reset", delay=0)]
     clock  = [dict(name="clock")]
 
-    interfaces = {
-        "io_client_0_a": dict(type="sb", dw=416, uri = "client_0_a.q", direction="input"),
-        "io_client_0_d": dict(type="sb", dw=416, uri = "client_0_d.q", direction="output"),
-    }
+    interfaces = make_interfaces(n_clients, n_managers) 
 
-    topModule_name = "explorerTL.tilelinkSwitchboard.TLMem"
     # build the simulator
     dut = SbDut(
         topModule_name.split(".")[-1],
@@ -42,6 +50,7 @@ def main():
         resets=reset,
         clocks=clock,
     )
+
     for src_file in chisel_generated_sources(topModule_name):
         dut.input(src_file)
 
@@ -68,9 +77,9 @@ def main():
     #dut.add("option", "mode", ["cc"])
     dut.build(fast=True)
 
-
     # clean up old queues if present
-    delete_queues(["in_port.q", "out_port.q"])
+    queue_files = [u for u in map(lambda v: v.get("uri"), interfaces.values()) if u is not None]
+    delete_queues(queue_files)
 
     # start client and chip
     # this order yields a smaller waveform file
@@ -84,4 +93,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    from settings import TOP_MODULE, N_CLIENTS, N_MANAGERS
+    main(TOP_MODULE, N_CLIENTS, N_MANAGERS)

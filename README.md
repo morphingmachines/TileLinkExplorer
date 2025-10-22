@@ -39,7 +39,17 @@ val res1: Int = 1
 scala> dut.manager1.node.out.length
 val res2: Int = 0
 ```
+## Simulation
+To run simulations, you need to install the following [dependencies](./doc/dependencies.md)
 
+We use [Switchboard](https://github.com/zeroasiccorp/switchboard) to provide stimulus to the accelerator module. All the stimulus generation
+
+After generating the RTL, follow the below steps to run the simulation.
+```sh
+$ conda activate Switchboard
+$ cd sb_sim/tlmem # "sb_sim/tlloopback" "sb_sim/regNode" "sb_sim/minimal"
+$ make 
+```
 ## Chisel Learning Resources
 
 - [Chisel Book](https://github.com/schoeberl/chisel-book)

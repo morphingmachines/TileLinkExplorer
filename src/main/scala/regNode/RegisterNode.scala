@@ -1,13 +1,13 @@
 package explorerTL.regNode
 
 import chisel3._
+import explorerTL.tilelinkSwitchboard.{SwitchboardTLAdapter, TLClientPortParams}
 import freechips.rocketchip.diplomacy.{AddressSet, IdRange}
 import freechips.rocketchip.regmapper.RegField
 import freechips.rocketchip.resources.SimpleDevice
 import freechips.rocketchip.tilelink._
 import org.chipsalliance.cde.config._
 import org.chipsalliance.diplomacy.lazymodule.{InModuleBody, LazyModule, LazyModuleImp}
-
 class ExampleDevice(val base: BigInt, val beatBytes: Int)(implicit p: Parameters) extends LazyModule {
 
   val device = new SimpleDevice("My Device", Seq("Toy Device"))
@@ -16,7 +16,7 @@ class ExampleDevice(val base: BigInt, val beatBytes: Int)(implicit p: Parameters
     address = Seq(AddressSet(base, 0xfff)),
     device = device,
     beatBytes = beatBytes,
-    concurrency = 1,
+    concurrency = 2,
   )
 
   lazy val module = new ExampleDeviceImp(this)
@@ -75,6 +75,14 @@ class ExampleDeviceImp(outer: ExampleDevice) extends LazyModuleImp(outer) {
   io.small  := smallReg
   io.tiny0  := tinyReg0
   io.tiny1  := tinyReg1
+}
+
+class SmoketestRegNode(implicit p: Parameters) extends LazyModule with SwitchboardTLAdapter {
+
+  override val nClientParams  = Seq(TLClientPortParams(idBits = 4))
+  override val nManagerParams = Seq.empty
+  val device                  = LazyModule(new ExampleDevice(base = 0, beatBytes = 32))
+  device.regNode := clients(0)
 }
 
 class DUT()(implicit p: Parameters) extends LazyModule {
